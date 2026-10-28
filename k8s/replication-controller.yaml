@@ -1,0 +1,35 @@
+# Alternative to Part 5 (Replication Controller). Use either this OR flask-deployment.yaml,
+# not both at once, since they select the same pods.
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: flask-rc
+spec:
+  replicas: 3
+  selector:
+    app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: flask-app
+          image: gurleen3014/todo-flask:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: mongodb://mongo:27017/
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5

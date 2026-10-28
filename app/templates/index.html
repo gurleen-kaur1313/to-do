@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>To-Do App</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; color: #222; }
+    h1 { margin-bottom: 4px; }
+    .meta { color: #666; font-size: 13px; margin-bottom: 24px; }
+    form.add { display: flex; gap: 8px; margin-bottom: 20px; }
+    form.add input { flex: 1; padding: 8px; font-size: 15px; }
+    button { padding: 6px 12px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #eee; }
+    li span { flex: 1; }
+    li.done span { text-decoration: line-through; color: #999; }
+    li form { margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>To-Do List</h1>
+  <div class="meta">Version: <strong>{{ version }}</strong> &middot; Served by pod: <strong>{{ hostname }}</strong></div>
+
+  <form class="add" action="/add" method="post">
+    <input name="title" placeholder="What needs doing?" required autofocus>
+    <button type="submit">Add</button>
+  </form>
+
+  <ul>
+    {% for t in todos %}
+    <li class="{{ 'done' if t.done }}">
+      <form action="/toggle/{{ t._id }}" method="post"><button>{{ 'Undo' if t.done else 'Done' }}</button></form>
+      <span>{{ t.title }}</span>
+      <form action="/delete/{{ t._id }}" method="post"><button>Delete</button></form>
+    </li>
+    {% else %}
+    <li><span>No tasks yet.</span></li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  labels:
+    app: flask-app
+spec:
+  replicas: 3                      # Part 5: desired number of replicas
+  strategy:                        # Part 6: rolling update
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  minReadySeconds: 5
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: flask-app
+          image: gurleen3014/todo-flask:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: mongodb://mongo:27017/
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          # Part 7: health monitoring
+          livenessProbe:           # failure -> container is restarted
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:          # failure -> pod removed from Service endpoints
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2

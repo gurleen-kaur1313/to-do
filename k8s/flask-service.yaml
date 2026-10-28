@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+spec:
+  # Minikube: use `minikube service flask-service --url` or `minikube tunnel`.
+  # EKS: AWS provisions an external load balancer.
+  type: LoadBalancer
+  selector:
+    app: flask-app
+  ports:
+    - port: 80
+      targetPort: 5000

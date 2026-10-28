@@ -1,0 +1,22 @@
+# Create with: eksctl create cluster -f eks/cluster.yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: todo-cluster
+  region: us-east-1
+
+iam:
+  withOIDC: true
+
+addons:
+  - name: aws-ebs-csi-driver   # needed so mongo-pvc can get an EBS volume
+    wellKnownPolicies:
+      ebsCSIController: true
+
+managedNodeGroups:
+  - name: todo-nodes
+    instanceType: t3.medium
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3

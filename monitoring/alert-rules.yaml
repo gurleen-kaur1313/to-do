@@ -1,0 +1,37 @@
+# Part 8: Prometheus alert rules (picked up by kube-prometheus-stack via the "release" label).
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: todo-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: todo-app
+      rules:
+        - alert: TodoPodNotReady
+          expr: sum(kube_pod_status_ready{namespace="default", pod=~"flask-app-.*", condition="false"}) > 0
+          for: 30s
+          labels:
+            severity: warning
+          annotations:
+            summary: "Flask pod failing its readiness probe"
+            description: "{{ $value }} flask-app pod(s) in default are not ready."
+
+        - alert: TodoPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="default", container="flask-app"}[5m]) > 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "Flask container restarted (liveness probe failure)"
+            description: "Pod {{ $labels.pod }} restarted {{ $value | humanize }} time(s) in the last 5 minutes."
+
+        - alert: TodoReplicasUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="default", deployment="flask-app"} < kube_deployment_spec_replicas{namespace="default", deployment="flask-app"}
+          for: 15s
+          labels:
+            severity: warning
+          annotations:
+            summary: "flask-app has fewer available replicas than desired"
+            description: "A pod was deleted or is unhealthy; available replicas are below spec."

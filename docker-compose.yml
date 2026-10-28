@@ -1,0 +1,25 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: todo-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  flask:
+    build:
+      context: ./app
+      args:
+        APP_VERSION: v1
+    image: gurleen3014/todo-flask:v1
+    container_name: todo-flask
+    ports:
+      - "8080:5000"
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

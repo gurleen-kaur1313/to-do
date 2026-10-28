@@ -1,0 +1,31 @@
+# Helm values for kube-prometheus-stack. Replace the Slack webhook URL before installing,
+# and keep the real URL out of git.
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 1m
+    route:
+      receiver: slack
+      group_by: ["alertname"]
+      group_wait: 10s
+      group_interval: 30s
+      repeat_interval: 1h
+      routes:
+        - receiver: "null"
+          matchers:
+            - alertname = "Watchdog"
+    receivers:
+      - name: "null"
+      - name: slack
+        slack_configs:
+          - api_url: "https://hooks.slack.com/services/REPLACE/WITH/YOUR_WEBHOOK"
+            channel: "#k8s-alerts"
+            send_resolved: true
+            title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+            text: >-
+              {{ range .Alerts }}*{{ .Annotations.summary }}*
+              {{ .Annotations.description }}
+              {{ end }}
+
+grafana:
+  enabled: true
